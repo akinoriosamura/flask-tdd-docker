@@ -12,8 +12,6 @@ jobs:
           command: | 
               docker login -u $DOCKER_USER -p $DOCKERHUB_PASSWORD
               docker pull $IMAGE:latest || true
-              docker build --cache-from $IMAGE:latest --tag $IMAGE:latest --file ./Dockerfile.prod .
-              docker push $IMAGE:latest
 
   test:
     # すべてのコマンドを実行する場所となるプライマリコンテナイメージ
