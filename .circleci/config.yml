@@ -15,7 +15,6 @@ jobs:
       - checkout
       # ↓コンテナの中でコンテナを使えないことを考えると、リモートのDockerを使うのに必須っぽいおまじない
       - setup_remote_docker:
-          docker_layer_caching: true
 
       # build
       - run:
