@@ -25,7 +25,7 @@ jobs:
           command: docker pull $IMAGE:latest
       - run:
           name: build docker image
-          command: docker build --cache-from $IMAGE:latest --tag $IMAGE:latest --file ./Dockerfile.prod .
+          command: docker build --tag $IMAGE:latest --file ./Dockerfile.prod .
       - run:
           name: push docker image
           command: docker push $IMAGE:latest
