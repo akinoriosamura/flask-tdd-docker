@@ -1,8 +1,7 @@
 version: 2
 jobs:
   build:
-    docker:
-      - image: circleci/python:latest
+    machine: true
     environment:
       IMAGE: registry.heroku.com/aqueous-mountain-28973/web
     steps:
@@ -11,9 +10,6 @@ jobs:
       - run:
           name: login docker
           command: docker login -u $DOCKER_USER -p $DOCKERHUB_PASSWORD
-      - run:
-          name: pull docker image
-          command: docker pull $IMAGE:latest || true
       - run:
           name: build docker image
           command: docker build --cache-from $IMAGE:latest --tag $IMAGE:latest --file ./Dockerfile.prod .
