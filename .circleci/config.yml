@@ -45,7 +45,7 @@ jobs:
 
       - setup_remote_docker
 
-  build:
+  deploy:
     docker:
       - image: alpine:3.4
     environment:
