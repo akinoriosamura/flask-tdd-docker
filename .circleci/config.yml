@@ -1,7 +1,8 @@
 version: 2
 jobs:
   build:
-    machine: true
+    docker:
+      - image: alpine:3.4
     environment:
       IMAGE: registry.heroku.com/aqueous-mountain-28973/web
     steps:
@@ -16,6 +17,7 @@ jobs:
       - run:
           name: push docker image
           command: docker push $IMAGE:latest
+      - setup_remote_docker
 
   test:
     # すべてのコマンドを実行する場所となるプライマリコンテナイメージ
@@ -42,3 +44,30 @@ jobs:
               isort project/**/*.py --check-only
 
       - setup_remote_docker
+
+  build:
+    docker:
+      - image: alpine:3.4
+    environment:
+      HEROKU_APP_NAME: aqueous-mountain-28973
+      HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/web
+    steps:
+      - checkout
+      # start proprietary DB using private Docker image
+      -run:
+          name: setup environment
+          command: |
+              apk add --no-cache curl
+              chmod +x ./release.sh
+      - run:
+          name: build docker image
+          command: docker build --tag $HEROKU_REGISTRY_IMAGE --file ./Dockerfile.prod .
+      -run:
+          name: heloku login
+          command:
+              docker login -u _ -p $HEROKU_AUTH_TOKEN registry.heroku.com
+      - run:
+          name: push docker image
+          command: |
+              docker push $HEROKU_REGISTRY_IMAGE
+              ./release.sh
