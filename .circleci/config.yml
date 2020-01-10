@@ -10,7 +10,7 @@ jobs:
       - run:
           name: build docker image
           command: | 
-              docker login -u $DOCKER_USER -p $DOCKERHUB_PASSWORD
+              docker login -u mitsuya2635 -p Mitsuya90
               docker build --cache-from $IMAGE:latest --tag $IMAGE:latest --file ./Dockerfile.prod .
               docker push $IMAGE:latest
 
