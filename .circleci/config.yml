@@ -4,32 +4,41 @@ jobs:
     docker:
       - image: alpine:3.4
     environment:
-      HEROKU_APP_NAME: young-peak-91678
-      HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/web
+      IMAGE: registry.heroku.com/young-peak-91678/web
     steps:
-      - checkout
-      # start proprietary DB using private Docker image
+      - run: mkdir -p /tmp/workspace/docker
       - run:
-          name: setup environment
+          name: install docker
           command: |
-              apk add --no-cache curl
-              chmod +x ./release.sh
+            apk update
+            apk add docker
+      - checkout
+      # ↓コンテナの中でコンテナを使えないことを考えると、リモートのDockerを使うのに必須っぽいおまじない
+      - setup_remote_docker:
+          docker_layer_caching: true
+
+      # build
+      - run:
+          name: login docker
+          command: docker login -u _ -p $HEROKU_API_KEY registry.heroku.com
+      - run:
+          name: pull docker image
+          command: docker pull $IMAGE:latest
       - run:
           name: build docker image
-          command: docker build --tag $HEROKU_REGISTRY_IMAGE --file ./Dockerfile.prod .
+          command: docker build --cache-from $IMAGE:latest --tag $IMAGE:latest --file ./Dockerfile.prod .
       - run:
-          name: heloku login
-          command:
-              docker login -u _ -p $HEROKU_API_KEY registry.heroku.com
-      - run:
-          name: push docker image and release
-          command: |
-              docker push $HEROKU_REGISTRY_IMAGE
-              ./release.sh
-
+          name: push docker image
+          command: docker push $IMAGE:latest
   test:
+    # すべてのコマンドを実行する場所となるプライマリコンテナイメージ
     docker:
-      - image: alpine:3.4
+      - image: registry.heroku.com/aqueous-mountain-28973/web:latest
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKERHUB_PASSWORD
+      # サービスコンテナイメージ
+      - image: circleci/postgres:9.6.5-alpine-ram
     steps:
       - run:
           name: Run test and formatter
@@ -70,10 +79,3 @@ jobs:
           command: |
               docker push $HEROKU_REGISTRY_IMAGE
               ./release.sh
-workflow:
-  version: 2
-  build_and_test_and_deploy:
-    jobs:
-      - build
-      - test
-      - deploy
