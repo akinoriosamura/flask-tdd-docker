@@ -1,32 +1,36 @@
 version: 2
 jobs:
   build:
-    machine: true
+    docker:
+      - image: alpine:3.4
     environment:
-      IMAGE: registry.heroku.com/young-peak-91678/web
+      HEROKU_APP_NAME: young-peak-91678
+      HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/web
     steps:
       - checkout
       # start proprietary DB using private Docker image
       - run:
-          name: login docker
-          command: docker login -u _ -p $HEROKU_API_KEY registry.heroku.com
+          name: setup environment
+          command: |
+              apk add --no-cache curl
+              chmod +x ./release.sh
       - run:
           name: build docker image
-          command: docker build --cache-from $IMAGE:latest --tag $IMAGE:latest --file ./Dockerfile.prod .
+          command: docker build --tag $HEROKU_REGISTRY_IMAGE --file ./Dockerfile.prod .
       - run:
-          name: push docker image
-          command: docker push $IMAGE:latest
+          name: heloku login
+          command:
+              docker login -u _ -p $HEROKU_API_KEY registry.heroku.com
+      - run:
+          name: push docker image and release
+          command: |
+              docker push $HEROKU_REGISTRY_IMAGE
+              ./release.sh
+
   test:
-    # すべてのコマンドを実行する場所となるプライマリコンテナイメージ
     docker:
-      - image: registry.heroku.com/aqueous-mountain-28973/web:latest
-        auth:
-          username: $DOCKER_USER
-          password: $DOCKERHUB_PASSWORD
-      # サービスコンテナイメージ
-      - image: circleci/postgres:9.6.5-alpine-ram
+      - image: alpine:3.4
     steps:
-      - checkout
       - run:
           name: Run test and formatter
           environment:
