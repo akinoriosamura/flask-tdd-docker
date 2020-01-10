@@ -54,7 +54,7 @@ jobs:
     steps:
       - checkout
       # start proprietary DB using private Docker image
-      -run:
+      - run:
           name: setup environment
           command: |
               apk add --no-cache curl
@@ -62,7 +62,7 @@ jobs:
       - run:
           name: build docker image
           command: docker build --tag $HEROKU_REGISTRY_IMAGE --file ./Dockerfile.prod .
-      -run:
+      - run:
           name: heloku login
           command:
               docker login -u _ -p $HEROKU_AUTH_TOKEN registry.heroku.com
