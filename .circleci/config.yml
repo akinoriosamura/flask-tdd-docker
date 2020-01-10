@@ -8,11 +8,17 @@ jobs:
       - checkout
       # start proprietary DB using private Docker image
       - run:
+          name: login docker
+          command: docker login -u $DOCKER_USER -p $DOCKERHUB_PASSWORD
+      - run:
+          name: pull docker image
+          command: docker pull $IMAGE:latest || true
+      - run:
           name: build docker image
-          command: | 
-              docker login -u mitsuya2635 -p Mitsuya90
-              docker build --cache-from $IMAGE:latest --tag $IMAGE:latest --file ./Dockerfile.prod .
-              docker push $IMAGE:latest
+          command: docker build --cache-from $IMAGE:latest --tag $IMAGE:latest --file ./Dockerfile.prod .
+      - run:
+          name: push docker image
+          command: docker push $IMAGE:latest
 
   test:
     # すべてのコマンドを実行する場所となるプライマリコンテナイメージ
