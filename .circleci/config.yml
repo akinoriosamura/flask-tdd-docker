@@ -4,6 +4,8 @@ jobs:
     machine: true
     environment:
       IMAGE: registry.heroku.com/young-peak-91678/web
+      HEROKU_APP_NAME: young-peak-91678
+      HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/web
     steps:
       - checkout
 
@@ -33,15 +35,7 @@ jobs:
               docker-compose exec users flake8 project
               docker-compose exec users black project --check
               docker-compose exec users isort project/**/*.py --check-only
-  deploy:
-    docker:
-      - image: alpine:3.4
-    environment:
-      HEROKU_APP_NAME: young-peak-91678
-      HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/web
-    steps:
-      - checkout
-      # start proprietary DB using private Docker image
+      # deploy
       - run:
           name: setup environment
           command: |
