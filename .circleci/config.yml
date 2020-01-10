@@ -16,7 +16,6 @@ jobs:
       - run:
           name: push docker image
           command: docker push $IMAGE:latest
-      - setup_remote_docker
 
   test:
     # すべてのコマンドを実行する場所となるプライマリコンテナイメージ
