@@ -5,7 +5,6 @@ jobs:
     environment:
       IMAGE: registry.heroku.com/young-peak-91678/web
       HEROKU_APP_NAME: young-peak-91678
-      HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/web
     steps:
       - checkout
 
@@ -42,7 +41,7 @@ jobs:
               chmod +x ./release.sh
       - run:
           name: build docker image
-          command: docker build --tag $HEROKU_REGISTRY_IMAGE --file ./Dockerfile.prod .
+          command: docker build --tag $IMAGE --file ./Dockerfile.prod .
       - run:
           name: heloku login
           command:
@@ -50,5 +49,5 @@ jobs:
       - run:
           name: push docker image and release
           command: |
-              docker push $HEROKU_REGISTRY_IMAGE
+              docker push $IMAGE
               ./release.sh
