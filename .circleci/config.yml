@@ -29,29 +29,26 @@ jobs:
       - run:
           name: push docker image
           command: docker push $IMAGE:latest
-  test:
-    # すべてのコマンドを実行する場所となるプライマリコンテナイメージ
-    docker:
-      - image: registry.heroku.com/aqueous-mountain-28973/web:latest
-        auth:
-          username: $DOCKER_USER
-          password: $DOCKERHUB_PASSWORD
-      # サービスコンテナイメージ
-      - image: circleci/postgres:9.6.5-alpine-ram
-    steps:
+      # test
+      - run:
+          name: Docker Compose をインストール
+          command: |
+              curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
+              chmod +x ~/docker-compose
+              sudo mv ~/docker-compose /usr/local/bin/docker-compose
+      - setup_remote_docker
+      - run:
+          name: build docker-compose
+          command: |
+              set -x
+              docker-compose up -d
       - run:
           name: Run test and formatter
-          environment:
-              POSTGRES_DB: users
-              POSTGRES_USER: runner
-              POSTGRES_PASSWORD: ""
-              DATABASE_TEST_URL: postgres://runner@postgres:5432/users
           command: |
-              pytest "project/tests" -p no:warnings
-              flake8 project
-              black project --check
-              isort project/**/*.py --check-only
-      - setup_remote_docker
+              docker-compose exec users python -m pytest "project/tests" -p no:warnings
+              docker-compose exec users flake8 project
+              docker-compose exec users black project --check
+              docker-compose exec users isort project/**/*.py --check-only
   deploy:
     docker:
       - image: alpine:3.4
