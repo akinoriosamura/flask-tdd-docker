@@ -1,7 +1,8 @@
 version: 2
 jobs:
   build:
-    machine: true
+    docker:
+      - image: circleci/python:latest
     environment:
       IMAGE: registry.heroku.com/aqueous-mountain-28973/web
     steps:
