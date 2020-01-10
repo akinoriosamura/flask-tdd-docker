@@ -27,21 +27,6 @@ jobs:
       - run:
           name: push docker image
           command: docker push $IMAGE:latest
-    """
-    steps:
-      - checkout
-      # start proprietary DB using private Docker image
-      - run:
-          name: login docker
-          command: docker login -u $DOCKER_USER -p $DOCKERHUB_PASSWORD
-      - run:
-          name: build docker image
-          command: docker build --cache-from $IMAGE:latest --tag $IMAGE:latest --file ./Dockerfile.prod .
-      - run:
-          name: push docker image
-          command: docker push $IMAGE:latest
-      - setup_remote_docker
-    """
 
   test:
     # すべてのコマンドを実行する場所となるプライマリコンテナイメージ
