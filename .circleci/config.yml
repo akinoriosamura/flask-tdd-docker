@@ -16,7 +16,6 @@ jobs:
       - run:
           name: push docker image
           command: docker push $IMAGE:latest
-
   test:
     # すべてのコマンドを実行する場所となるプライマリコンテナイメージ
     docker:
@@ -40,9 +39,7 @@ jobs:
               flake8 project
               black project --check
               isort project/**/*.py --check-only
-
       - setup_remote_docker
-
   deploy:
     docker:
       - image: alpine:3.4
@@ -65,7 +62,14 @@ jobs:
           command:
               docker login -u _ -p $HEROKU_API_KEY registry.heroku.com
       - run:
-          name: push docker image
+          name: push docker image and release
           command: |
               docker push $HEROKU_REGISTRY_IMAGE
               ./release.sh
+  workflow:
+    version: 2
+    build_and_test_and_deploy:
+      jobs:
+        - build
+        - test
+        - deploy
