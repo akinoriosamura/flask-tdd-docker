@@ -3,8 +3,7 @@ jobs:
   build:
     machine: true
     environment:
-      IMAGE: registry.heroku.com/aqueous-mountain-28973/web:latest
-    working_directory: ~/
+      IMAGE: registry.heroku.com/aqueous-mountain-28973/web
     steps:
       - checkout
       # start proprietary DB using private Docker image
@@ -45,3 +44,4 @@ jobs:
             isort project/**/*.py --check-only
 
       - setup_remote_docker
+        docker_layer_caching: true
