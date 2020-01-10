@@ -29,7 +29,8 @@ jobs:
           password: $DOCKERHUB_PASSWORD
       # サービスコンテナイメージ
       - image: circleci/postgres:9.6.5-alpine-ram
-
+    steps:
+      - checkout
       - run:
           name: Run test and formatter
           environment:
