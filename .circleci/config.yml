@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: ubuntu:latest
+      - image: python:latest
     environment:
       IMAGE: registry.heroku.com/aqueous-mountain-28973/web
     steps:
