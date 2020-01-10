@@ -42,3 +42,30 @@ jobs:
               isort project/**/*.py --check-only
 
       - setup_remote_docker
+
+  deploy:
+    docker:
+      - image: alpine:3.4
+    environment:
+      HEROKU_APP_NAME: young-peak-91678
+      HEROKU_REGISTRY_IMAGE: registry.heroku.com/${HEROKU_APP_NAME}/web
+    steps:
+      - checkout
+      # start proprietary DB using private Docker image
+      - run:
+          name: setup environment
+          command: |
+              apk add --no-cache curl
+              chmod +x ./release.sh
+      - run:
+          name: build docker image
+          command: docker build --tag $HEROKU_REGISTRY_IMAGE --file ./Dockerfile.prod .
+      - run:
+          name: heloku login
+          command:
+              docker login -u _ -p $HEROKU_API_KEY registry.heroku.com
+      - run:
+          name: push docker image
+          command: |
+              docker push $HEROKU_REGISTRY_IMAGE
+              ./release.sh
