@@ -1,40 +1,46 @@
-image: docker:stable
+version: 2
+jobs:
+  build:
+    machine: true
+    environment:
+      IMAGE: registry.heroku.com/aqueous-mountain-28973/web:latest
+    working_directory: ~/
+    steps:
+      - checkout
+      # start proprietary DB using private Docker image
+      - run:
+        name: build docker image
+        command: |
+          docker login -u $DOCKER_USER -p $DOCKERHUB_PASSWORD
+          docker pull $IMAGE:latest || true
+          docker build
+            --cache-from $IMAGE:latest
+            --tag $IMAGE:latest
+            --file ./Dockerfile.prod
+          "."
+          docker push $IMAGE:latest
 
-stages:
-  - build
-  - test
+  test:
+    # すべてのコマンドを実行する場所となるプライマリコンテナイメージ
+    docker:
+      - image: registry.heroku.com/aqueous-mountain-28973/web:latest
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKERHUB_PASSWORD
+      # サービスコンテナイメージ
+      - image: circleci/postgres:9.6.5-alpine-ram
 
-variables:
-  IMAGE: ${CI_REGISTRY}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}
+      - run:
+          name: Run test and formatter
+          environment:
+            POSTGRES_DB: users
+            POSTGRES_USER: runner
+            POSTGRES_PASSWORD: ""
+            DATABASE_TEST_URL: postgres://runner@postgres:5432/users
+          command: |
+            pytest "project/tests" -p no:warnings
+            flake8 project
+            black project --check
+            isort project/**/*.py --check-only
 
-build:
-  stage: build
-  services:
-    - docker:dind
-  variables:
-    DOCKER_DRIVER: overlay2
-  script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $IMAGE:latest || true
-    - docker build
-        --cache-from $IMAGE:latest
-        --tag $IMAGE:latest
-        --file ./Dockerfile.prod
-        "."
-    - docker push $IMAGE:latest
-
-test:
-  stage: test
-  image: $IMAGE:latest
-  services:
-    - postgres:latest
-  variables:
-    POSTGRES_DB: users
-    POSTGRES_USER: runner
-    POSTGRES_PASSWORD: ""
-    DATABASE_TEST_URL: postgres://runner@postgres:5432/users
-  script:
-    - pytest "project/tests" -p no:warnings
-    - flake8 project
-    - black project --check
-    - isort project/**/*.py --check-only
+      - setup_remote_docker
