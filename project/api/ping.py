@@ -1,5 +1,5 @@
 from flask import Blueprint
-from flask_restplus import Api, Resource, Namespace
+from flask_restplus import Api, Namespace, Resource
 
 ping_namespace = Namespace("ping")
 

@@ -28,6 +28,7 @@ def create_app(script_info=None):
         admin.init_app(app)
 
     from project.api import api  # new
+
     api.init_app(app)  # new
 
     # shell context for flask cli
