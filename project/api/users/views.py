@@ -1,13 +1,12 @@
 from flask import Blueprint, request
-from flask_restplus import Api, Resource, fields
+from flask_restplus import Api, Resource, fields, Namespace
 
 from project.api.services import (add_user, get_all_users, get_user_by_email,
                                   get_user_by_id)
 
-users_blueprint = Blueprint("users", __name__)
-api = Api(users_blueprint)
+users_namespace = Namespace("users")
 
-user = api.model(
+user = users_namespace.model(
     "User",
     {
         "id": fields.Integer(readOnly=True),
@@ -19,7 +18,7 @@ user = api.model(
 
 
 class UserLists(Resource):
-    @api.expect(user, validate=True)
+    @users_namespace.expect(user, validate=True)
     def post(self):
         post_data = request.get_json()
         username = post_data.get("username")
@@ -35,19 +34,18 @@ class UserLists(Resource):
         response_object["message"] = f"{email} was added!"
         return response_object, 201
 
-    @api.marshal_with(user, as_list=True)
+    @users_namespace.marshal_with(user, as_list=True)
     def get(self):
         return get_all_users(), 200
 
 
 class Users(Resource):
-    @api.marshal_with(user)
+    @users_namespace.marshal_with(user)
     def get(self, user_id):
         user = get_user_by_id(user_id)
         if not user:
             api.abort(404, f"User {user_id} does not exist")
         return user, 200
 
-
-api.add_resource(UserLists, "/users")
-api.add_resource(Users, "/users/<int:user_id>")
+users_namespace.add_resource(UsersList, "")  # updated
+users_namespace.add_resource(Users, "/<int:user_id>")  # updated
