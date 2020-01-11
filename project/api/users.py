@@ -1,8 +1,6 @@
 from flask import Blueprint, request
 from flask_restplus import Api, Resource, fields
 
-from project import db
-from project.api.models import User
 from project.api.services import (add_user, get_all_users, get_user_by_email,
                                   get_user_by_id)
 
