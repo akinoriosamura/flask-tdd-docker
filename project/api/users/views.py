@@ -1,5 +1,5 @@
-from flask import Blueprint, request
-from flask_restplus import Api, Resource, fields, Namespace
+from flask import request
+from flask_restplus import Resource, fields, Namespace
 
 from project.api.services import (
     add_user,
